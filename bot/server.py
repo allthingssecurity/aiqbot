@@ -232,6 +232,6 @@ async def delete_room(room_name: str):
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.getenv("BOT_SERVER_PORT", "8080"))
+    port = int(os.getenv("PORT", os.getenv("BOT_SERVER_PORT", "8080")))
     logger.info(f"Starting AIQNEX voice-bot server on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)

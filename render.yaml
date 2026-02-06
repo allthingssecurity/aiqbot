@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: aiqnex-voice-bot
+    runtime: python
+    rootDir: bot
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DAILY_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: RIVA_TTS_URL
+        value: grpc.nvcf.nvidia.com:443
+      - key: RIVA_TTS_FUNCTION_ID
+        value: 877104f7-e885-42b9-8de8-f6e4c6303969
+      - key: RIVA_TTS_VOICE_ID
+        value: Magpie-Multilingual.EN-US.Sofia
+      - key: RIVA_TTS_LANGUAGE
+        value: en-US
+      - key: TTS_SAMPLE_RATE
+        value: "16000"
+      - key: RIVA_ASR_URL
+        value: grpc.nvcf.nvidia.com:443
+      - key: RIVA_ASR_FUNCTION_ID
+        value: 1598d209-5e27-4d3c-8079-4751568b1081
+      - key: RIVA_ASR_LANGUAGE
+        value: en-US
+      - key: RIVA_ASR_SAMPLE_RATE
+        value: "16000"
+      - key: NVIDIA_LLM_MODEL
+        value: meta/llama-3.1-8b-instruct
+      - key: NVIDIA_LLM_BASE_URL
+        value: https://integrate.api.nvidia.com/v1
+      - key: PYTHON_VERSION
+        value: "3.12.2"

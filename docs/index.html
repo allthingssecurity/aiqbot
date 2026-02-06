@@ -178,48 +178,6 @@
     .footer a { color: #818cf8; text-decoration: none; }
     .footer a:hover { text-decoration: underline; }
 
-    /* Config bar */
-    .config-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0,0,0,0.4);
-      padding: 0.5rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      backdrop-filter: blur(10px);
-      z-index: 100;
-    }
-
-    .config-bar label { color: #94a3b8; }
-
-    .config-bar input {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #e0e6ff;
-      padding: 0.3rem 0.6rem;
-      border-radius: 0.4rem;
-      font-size: 0.8rem;
-      width: 320px;
-      font-family: monospace;
-    }
-
-    .config-bar button {
-      background: #6366f1;
-      color: white;
-      border: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 0.4rem;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    .config-bar .saved { color: #34d399; margin-left: 0.5rem; }
-
     #daily-iframe {
       position: fixed;
       width: 1px;
@@ -233,13 +191,6 @@
   </style>
 </head>
 <body>
-  <div class="config-bar">
-    <label>Backend URL:</label>
-    <input type="text" id="backendUrl" placeholder="https://your-tunnel.trycloudflare.com">
-    <button onclick="saveBackend()">Save</button>
-    <span class="saved" id="savedMsg" style="display:none">Saved</span>
-  </div>
-
   <div class="container">
     <div class="logo">AIQNEX</div>
     <div class="tagline">AI & Quantum Computing Training — Singapore</div>
@@ -280,6 +231,10 @@
 
   <script src="https://unpkg.com/@daily-co/daily-js"></script>
   <script>
+    // ---- CONFIGURATION ----
+    // Cloudflare Worker URL (update after wrangler deploy)
+    const API_BASE = 'https://aiqnex-voice-bot.allthingssecurity.workers.dev';
+
     let callFrame = null;
     let isMuted = false;
 
@@ -289,22 +244,6 @@
     const muteBtn    = document.getElementById('muteBtn');
     const avatar     = document.getElementById('avatar');
     const visualizer = document.getElementById('visualizer');
-    const backendInput = document.getElementById('backendUrl');
-    const savedMsg   = document.getElementById('savedMsg');
-
-    // Load saved backend URL or use default
-    const DEFAULT_BACKEND = 'http://localhost:8080';
-    backendInput.value = localStorage.getItem('aiqnex_backend') || DEFAULT_BACKEND;
-
-    function saveBackend() {
-      localStorage.setItem('aiqnex_backend', backendInput.value.replace(/\/+$/, ''));
-      savedMsg.style.display = 'inline';
-      setTimeout(() => savedMsg.style.display = 'none', 2000);
-    }
-
-    function getBackendUrl() {
-      return (backendInput.value || DEFAULT_BACKEND).replace(/\/+$/, '');
-    }
 
     function setStatus(text, cls) {
       statusEl.textContent = text;
@@ -316,8 +255,7 @@
       setStatus('Connecting\u2026');
 
       try {
-        const backend = getBackendUrl();
-        const resp = await fetch(backend + '/room', { method: 'POST' });
+        const resp = await fetch(API_BASE + '/api/room', { method: 'POST' });
         if (!resp.ok) throw new Error('Server error: ' + resp.status);
         const data = await resp.json();
 

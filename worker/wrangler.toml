@@ -3,5 +3,6 @@ main = "src/index.js"
 compatibility_date = "2024-12-01"
 
 [vars]
-# Set this to your cloudflared tunnel URL or local backend URL
-BACKEND_URL = "http://localhost:8080"
+# Set this to your Render backend URL after deploy
+# e.g. https://aiqnex-voice-bot.onrender.com
+BACKEND_URL = "https://aiqnex-voice-bot.onrender.com"
