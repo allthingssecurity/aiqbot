@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from pipecat.audio.vad.silero import SileroVADAnalyzer
-from pipecat.frames.frames import LLMMessagesAppendFrame, LLMRunFrame, TTSSpeakFrame
+from pipecat.frames.frames import LLMMessagesAppendFrame, LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -150,17 +150,16 @@ async def run_bot(room_url: str, token: str):
     # ---- Event handlers -----------------------------------------------------
     greeted = {"value": False}
 
-    WELCOME_MESSAGE = (
-        "Welcome! I'm your AI assistant for our AI and Quantum Computing training institute in Singapore. "
-        "I can tell you about our programs, upcoming courses, pricing, and more. "
-        "How can I help you today?"
-    )
-
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
         logger.info(f"Participant joined: {participant.get('id')}")
-        # Speak a fixed welcome message immediately (no LLM delay, no pronunciation issues)
-        await task.queue_frames([TTSSpeakFrame(text=WELCOME_MESSAGE)])
+        await task.queue_frames([
+            LLMMessagesAppendFrame([{
+                "role": "user",
+                "content": "The user has just joined. Greet them warmly. Say: Welcome! I'm your AI assistant for our AI and Quantum Computing training institute in Singapore. I can help you with our programs, courses, pricing and more. How can I help you today?",
+            }]),
+            LLMRunFrame(),
+        ])
         greeted["value"] = True
 
     @transport.event_handler("on_participant_left")
@@ -173,7 +172,13 @@ async def run_bot(room_url: str, token: str):
         try:
             await asyncio.sleep(3.0)
             if not greeted["value"]:
-                await task.queue_frames([TTSSpeakFrame(text=WELCOME_MESSAGE)])
+                await task.queue_frames([
+                    LLMMessagesAppendFrame([{
+                        "role": "user",
+                        "content": "Please greet me warmly and tell me briefly what you can help with. Do not say any company name.",
+                    }]),
+                    LLMRunFrame(),
+                ])
                 logger.info("Auto-greeting enqueued")
         except Exception:
             logger.debug("autogreet failed")
