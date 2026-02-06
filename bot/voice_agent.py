@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from pipecat.audio.vad.silero import SileroVADAnalyzer
-from pipecat.frames.frames import LLMMessagesAppendFrame, LLMRunFrame
+from pipecat.frames.frames import LLMMessagesAppendFrame, LLMRunFrame, TTSSpeakFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -54,15 +54,12 @@ CONTACT INFORMATION:
 - Address: 10 Ubi Crescent, #04-33 Ubi Techpark, Singapore 408564
 - Website: aiqnex.com
 
-PRONUNCIATION:
-- CRITICAL: ALWAYS write the company name as "Ay IQ Nex" in your responses. This ensures the text-to-speech engine says it correctly. NEVER write "AIQNEX", "A-IQ-Nex", or any other variation. Always "Ay IQ Nex".
-
 CONVERSATION GUIDELINES:
 - Be warm, enthusiastic, and professional.
 - Keep responses concise (2-3 sentences) since this is a voice conversation.
-- If asked about topics outside Ay IQ Nex, politely redirect to what Ay IQ Nex offers.
-- Encourage users to visit aiqnex.com or contact us for more details.
-- When greeting, introduce yourself as the Ay IQ Nex Voice Assistant and ask how you can help.
+- NEVER say the company name out loud. Instead refer to it as "we", "us", "our institute", or "our training programs". For example say "Welcome to our AI and Quantum Computing training institute!" instead of mentioning the name.
+- If asked about topics outside our scope, politely redirect to what we offer.
+- Encourage users to visit our website or contact us for more details.
 - Use natural, conversational language appropriate for spoken dialogue.
 """
 
@@ -153,16 +150,17 @@ async def run_bot(room_url: str, token: str):
     # ---- Event handlers -----------------------------------------------------
     greeted = {"value": False}
 
+    WELCOME_MESSAGE = (
+        "Welcome! I'm your AI assistant for our AI and Quantum Computing training institute in Singapore. "
+        "I can tell you about our programs, upcoming courses, pricing, and more. "
+        "How can I help you today?"
+    )
+
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
         logger.info(f"Participant joined: {participant.get('id')}")
-        await task.queue_frames([
-            LLMMessagesAppendFrame([{
-                "role": "user",
-                "content": "The user has just joined the call. Please greet them warmly as the AIQNEX Voice Assistant and ask how you can help them learn about AIQNEX programs.",
-            }]),
-            LLMRunFrame(),
-        ])
+        # Speak a fixed welcome message immediately (no LLM delay, no pronunciation issues)
+        await task.queue_frames([TTSSpeakFrame(text=WELCOME_MESSAGE)])
         greeted["value"] = True
 
     @transport.event_handler("on_participant_left")
@@ -175,13 +173,7 @@ async def run_bot(room_url: str, token: str):
         try:
             await asyncio.sleep(3.0)
             if not greeted["value"]:
-                await task.queue_frames([
-                    LLMMessagesAppendFrame([{
-                        "role": "user",
-                        "content": "Please greet me and tell me briefly what AIQNEX offers.",
-                    }]),
-                    LLMRunFrame(),
-                ])
+                await task.queue_frames([TTSSpeakFrame(text=WELCOME_MESSAGE)])
                 logger.info("Auto-greeting enqueued")
         except Exception:
             logger.debug("autogreet failed")
