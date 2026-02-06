@@ -1,0 +1,11 @@
+pipecat-ai[daily,silero,nvidia]==0.0.101
+grpcio>=1.59.0
+daily-python>=0.6.0
+python-dotenv>=1.0.0
+aiohttp>=3.9.0
+httpx>=0.26.0
+fastapi>=0.109.0
+uvicorn>=0.27.0
+loguru>=0.7.0
+certifi>=2024.0.0
+nvidia-riva-client>=2.12.0

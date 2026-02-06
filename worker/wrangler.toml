@@ -1,0 +1,7 @@
+name = "aiqnex-voice-bot"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+[vars]
+# Set this to your cloudflared tunnel URL or local backend URL
+BACKEND_URL = "http://localhost:8080"

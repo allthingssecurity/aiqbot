@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIQNEX Voice Assistant</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f4e 50%, #0d1137 100%);
+      color: #e0e6ff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      margin-bottom: 2.5rem;
+    }
+
+    .assistant-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(20px);
+      margin-bottom: 1.5rem;
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+    }
+
+    .avatar.active {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.3); }
+      50% { box-shadow: 0 0 50px rgba(99, 102, 241, 0.6); }
+    }
+
+    .status {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+      min-height: 1.2em;
+    }
+
+    .status.connected { color: #34d399; }
+    .status.error { color: #f87171; }
+
+    .visualizer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      height: 40px;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .visualizer.active { opacity: 1; }
+
+    .visualizer .bar {
+      width: 4px;
+      background: linear-gradient(to top, #6366f1, #a78bfa);
+      border-radius: 2px;
+      height: 8px;
+      transition: height 0.1s;
+    }
+
+    .visualizer.active .bar {
+      animation: equalize 0.8s ease-in-out infinite alternate;
+    }
+
+    .visualizer.active .bar:nth-child(1) { animation-delay: 0s; }
+    .visualizer.active .bar:nth-child(2) { animation-delay: 0.1s; }
+    .visualizer.active .bar:nth-child(3) { animation-delay: 0.2s; }
+    .visualizer.active .bar:nth-child(4) { animation-delay: 0.15s; }
+    .visualizer.active .bar:nth-child(5) { animation-delay: 0.05s; }
+    .visualizer.active .bar:nth-child(6) { animation-delay: 0.25s; }
+    .visualizer.active .bar:nth-child(7) { animation-delay: 0.12s; }
+
+    @keyframes equalize {
+      0% { height: 8px; }
+      100% { height: 36px; }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 0.75rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e0e6ff;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1.2rem;
+    }
+
+    .btn-icon:hover { background: rgba(255, 255, 255, 0.2); }
+    .btn-icon.muted { background: rgba(239, 68, 68, 0.3); border-color: rgba(239, 68, 68, 0.5); }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .footer a { color: #818cf8; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* Config bar */
+    .config-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.4);
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .config-bar label { color: #94a3b8; }
+
+    .config-bar input {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #e0e6ff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0.4rem;
+      font-size: 0.8rem;
+      width: 320px;
+      font-family: monospace;
+    }
+
+    .config-bar button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 0.4rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .config-bar .saved { color: #34d399; margin-left: 0.5rem; }
+
+    #daily-iframe {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      bottom: 0;
+      right: 0;
+      border: none;
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="config-bar">
+    <label>Backend URL:</label>
+    <input type="text" id="backendUrl" placeholder="https://your-tunnel.trycloudflare.com">
+    <button onclick="saveBackend()">Save</button>
+    <span class="saved" id="savedMsg" style="display:none">Saved</span>
+  </div>
+
+  <div class="container">
+    <div class="logo">AIQNEX</div>
+    <div class="tagline">AI & Quantum Computing Training — Singapore</div>
+
+    <div class="assistant-card">
+      <div class="avatar" id="avatar">&#129302;</div>
+
+      <div class="visualizer" id="visualizer">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+      <div class="status" id="status">Ready to assist you</div>
+
+      <button class="btn-primary" id="startBtn" onclick="startConversation()">
+        Start Conversation
+      </button>
+
+      <div class="controls" id="controls" style="display:none;">
+        <button class="btn-icon" id="muteBtn" onclick="toggleMute()" title="Mute">
+          &#128266;
+        </button>
+        <button class="btn-icon" onclick="leaveConversation()" title="End call"
+                style="background:rgba(239,68,68,0.3);border-color:rgba(239,68,68,0.5);">
+          &#128405;
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="https://aiqnex.com" target="_blank">aiqnex.com</a>
+      &nbsp;|&nbsp; contact@aiqnex.com &nbsp;|&nbsp; +65 8974 9095
+    </div>
+  </div>
+
+  <iframe id="daily-iframe" allow="microphone; camera; autoplay"></iframe>
+
+  <script src="https://unpkg.com/@daily-co/daily-js"></script>
+  <script>
+    let callFrame = null;
+    let isMuted = false;
+
+    const statusEl   = document.getElementById('status');
+    const startBtn   = document.getElementById('startBtn');
+    const controls   = document.getElementById('controls');
+    const muteBtn    = document.getElementById('muteBtn');
+    const avatar     = document.getElementById('avatar');
+    const visualizer = document.getElementById('visualizer');
+    const backendInput = document.getElementById('backendUrl');
+    const savedMsg   = document.getElementById('savedMsg');
+
+    // Load saved backend URL or use default
+    const DEFAULT_BACKEND = 'http://localhost:8080';
+    backendInput.value = localStorage.getItem('aiqnex_backend') || DEFAULT_BACKEND;
+
+    function saveBackend() {
+      localStorage.setItem('aiqnex_backend', backendInput.value.replace(/\/+$/, ''));
+      savedMsg.style.display = 'inline';
+      setTimeout(() => savedMsg.style.display = 'none', 2000);
+    }
+
+    function getBackendUrl() {
+      return (backendInput.value || DEFAULT_BACKEND).replace(/\/+$/, '');
+    }
+
+    function setStatus(text, cls) {
+      statusEl.textContent = text;
+      statusEl.className = 'status' + (cls ? ' ' + cls : '');
+    }
+
+    async function startConversation() {
+      startBtn.disabled = true;
+      setStatus('Connecting\u2026');
+
+      try {
+        const backend = getBackendUrl();
+        const resp = await fetch(backend + '/room', { method: 'POST' });
+        if (!resp.ok) throw new Error('Server error: ' + resp.status);
+        const data = await resp.json();
+
+        callFrame = DailyIframe.createFrame(
+          document.getElementById('daily-iframe'),
+          {
+            iframeStyle: { position: 'fixed', width: '1px', height: '1px', bottom: '0', right: '0', border: 'none', opacity: '0' },
+            showLeaveButton: false,
+            showFullscreenButton: false,
+          }
+        );
+
+        callFrame.on('joined-meeting', () => {
+          setStatus('Connected \u2014 speak to the assistant', 'connected');
+          startBtn.style.display = 'none';
+          controls.style.display = 'flex';
+          avatar.classList.add('active');
+          visualizer.classList.add('active');
+        });
+
+        callFrame.on('left-meeting', () => {
+          setStatus('Call ended');
+          resetUI();
+        });
+
+        callFrame.on('error', (e) => {
+          setStatus('Error: ' + (e.errorMsg || 'unknown'), 'error');
+          resetUI();
+        });
+
+        await callFrame.join({ url: data.room_url, token: data.token });
+
+      } catch (err) {
+        setStatus('Failed to connect: ' + err.message, 'error');
+        startBtn.disabled = false;
+      }
+    }
+
+    function toggleMute() {
+      if (!callFrame) return;
+      isMuted = !isMuted;
+      callFrame.setLocalAudio(!isMuted);
+      muteBtn.classList.toggle('muted', isMuted);
+      muteBtn.innerHTML = isMuted ? '&#128263;' : '&#128266;';
+    }
+
+    async function leaveConversation() {
+      if (callFrame) {
+        await callFrame.leave();
+        callFrame.destroy();
+        callFrame = null;
+      }
+      resetUI();
+    }
+
+    function resetUI() {
+      startBtn.style.display = '';
+      startBtn.disabled = false;
+      controls.style.display = 'none';
+      avatar.classList.remove('active');
+      visualizer.classList.remove('active');
+      isMuted = false;
+      muteBtn.classList.remove('muted');
+      muteBtn.innerHTML = '&#128266;';
+      setStatus('Ready to assist you');
+    }
+  </script>
+</body>
+</html>
