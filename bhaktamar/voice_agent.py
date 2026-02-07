@@ -105,6 +105,13 @@ CONVERSATION GUIDELINES:
 - Encourage contemplation and personal reflection.
 - Use natural, conversational language appropriate for spoken dialogue.
 - You may share the verse number and title when discussing specific verses.
+
+CRITICAL VOICE FORMATTING RULES:
+- NEVER use asterisks, markdown, bullet points, numbered lists, or any text formatting.
+- NEVER use symbols like *, **, #, -, or bullet characters in your responses.
+- Speak in plain, natural sentences only — as if you are talking to someone face to face.
+- Do not use headings, bold, italics, or any visual formatting. This is a voice-only conversation.
+- Instead of lists, weave information naturally into flowing sentences.
 """
 
 
@@ -200,7 +207,7 @@ async def run_bot(room_url: str, token: str):
         await task.queue_frames([
             LLMMessagesAppendFrame([{
                 "role": "user",
-                "content": "The user has joined. Greet them warmly. Say something like: Namaste! Welcome. I am your guide to the Bhaktambar Stotra, the beautiful 48-verse Jain hymn of devotion. You can ask me about any verse, its meaning, or the spiritual wisdom within. What would you like to explore?",
+                "content": "The user has just joined the session. Immediately greet them with a warm welcome. Say exactly in plain speech without any formatting: Namaste and welcome! I am your guide to the Bhaktambar Stotra, the beautiful 48-verse Jain hymn of devotion composed by Acharya Manatunga. You can ask me about any verse, its meaning, or the spiritual wisdom within. What would you like to explore today?",
             }]),
             LLMRunFrame(),
         ])
