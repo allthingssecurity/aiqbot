@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bhaktambar Voice Guide</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a0a00 0%, #3d1c00 50%, #1a0a00 100%);
+      color: #ffe0c0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .logo {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f59e0b, #d97706, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #d97706;
+      margin-bottom: 0.3rem;
+      font-style: italic;
+    }
+
+    .tagline {
+      font-size: 0.85rem;
+      color: #a0845c;
+      margin-bottom: 2.5rem;
+    }
+
+    .assistant-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(217, 119, 6, 0.2);
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(20px);
+      margin-bottom: 1.5rem;
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      box-shadow: 0 0 30px rgba(217, 119, 6, 0.3);
+    }
+
+    .avatar.active {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(217, 119, 6, 0.3); }
+      50% { box-shadow: 0 0 50px rgba(217, 119, 6, 0.6); }
+    }
+
+    .status {
+      font-size: 0.85rem;
+      color: #a0845c;
+      margin-bottom: 1.5rem;
+      min-height: 1.2em;
+    }
+
+    .status.connected { color: #34d399; }
+    .status.error { color: #f87171; }
+
+    .visualizer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      height: 40px;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .visualizer.active { opacity: 1; }
+
+    .visualizer .bar {
+      width: 4px;
+      background: linear-gradient(to top, #d97706, #fbbf24);
+      border-radius: 2px;
+      height: 8px;
+    }
+
+    .visualizer.active .bar {
+      animation: equalize 0.8s ease-in-out infinite alternate;
+    }
+
+    .visualizer.active .bar:nth-child(1) { animation-delay: 0s; }
+    .visualizer.active .bar:nth-child(2) { animation-delay: 0.1s; }
+    .visualizer.active .bar:nth-child(3) { animation-delay: 0.2s; }
+    .visualizer.active .bar:nth-child(4) { animation-delay: 0.15s; }
+    .visualizer.active .bar:nth-child(5) { animation-delay: 0.05s; }
+    .visualizer.active .bar:nth-child(6) { animation-delay: 0.25s; }
+    .visualizer.active .bar:nth-child(7) { animation-delay: 0.12s; }
+
+    @keyframes equalize {
+      0% { height: 8px; }
+      100% { height: 36px; }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: white;
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 0.75rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(217, 119, 6, 0.4);
+    }
+
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffe0c0;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1.2rem;
+    }
+
+    .btn-icon:hover { background: rgba(255, 255, 255, 0.2); }
+    .btn-icon.muted { background: rgba(239, 68, 68, 0.3); border-color: rgba(239, 68, 68, 0.5); }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #6b5a42;
+    }
+
+    #daily-iframe {
+      position: fixed; width: 1px; height: 1px; bottom: 0; right: 0;
+      border: none; opacity: 0; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Bhaktambar Stotra</div>
+    <div class="subtitle">&#x1F539; Voice Guide &#x1F539;</div>
+    <div class="tagline">48 Verses of Devotion &mdash; Ask, Listen, Reflect</div>
+
+    <div class="assistant-card">
+      <div class="avatar" id="avatar">&#128591;</div>
+
+      <div class="visualizer" id="visualizer">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+      <div class="status" id="status">Ready to guide you</div>
+
+      <button class="btn-primary" id="startBtn" onclick="startConversation()">
+        Begin Session
+      </button>
+
+      <div class="controls" id="controls" style="display:none;">
+        <button class="btn-icon" id="muteBtn" onclick="toggleMute()" title="Mute">&#128266;</button>
+        <button class="btn-icon" onclick="leaveConversation()" title="End"
+                style="background:rgba(239,68,68,0.3);border-color:rgba(239,68,68,0.5);">&#128591;</button>
+      </div>
+    </div>
+
+    <div class="footer">Bhaktambar Stotra &mdash; Acharya Manatunga</div>
+  </div>
+
+  <iframe id="daily-iframe" allow="microphone; camera; autoplay"></iframe>
+
+  <script src="https://unpkg.com/@daily-co/daily-js"></script>
+  <script>
+    const API_BASE = 'https://bhaktamar-voice-bot.jain-sm.workers.dev';
+
+    let callFrame = null;
+    let isMuted = false;
+
+    const statusEl   = document.getElementById('status');
+    const startBtn   = document.getElementById('startBtn');
+    const controls   = document.getElementById('controls');
+    const muteBtn    = document.getElementById('muteBtn');
+    const avatar     = document.getElementById('avatar');
+    const visualizer = document.getElementById('visualizer');
+
+    function setStatus(text, cls) {
+      statusEl.textContent = text;
+      statusEl.className = 'status' + (cls ? ' ' + cls : '');
+    }
+
+    async function startConversation() {
+      startBtn.disabled = true;
+      setStatus('Connecting\u2026');
+      try {
+        const resp = await fetch(API_BASE + '/api/room', { method: 'POST' });
+        if (!resp.ok) throw new Error('Server error: ' + resp.status);
+        const data = await resp.json();
+
+        callFrame = DailyIframe.createFrame(document.getElementById('daily-iframe'), {
+          iframeStyle: { position:'fixed',width:'1px',height:'1px',bottom:'0',right:'0',border:'none',opacity:'0' },
+          showLeaveButton: false, showFullscreenButton: false,
+        });
+
+        callFrame.on('joined-meeting', () => {
+          setStatus('Connected \u2014 ask about any verse', 'connected');
+          startBtn.style.display = 'none';
+          controls.style.display = 'flex';
+          avatar.classList.add('active');
+          visualizer.classList.add('active');
+        });
+        callFrame.on('left-meeting', () => { setStatus('Session ended'); resetUI(); });
+        callFrame.on('error', (e) => { setStatus('Error: '+(e.errorMsg||'unknown'),'error'); resetUI(); });
+
+        await callFrame.join({ url: data.room_url, token: data.token });
+      } catch (err) {
+        setStatus('Failed: ' + err.message, 'error');
+        startBtn.disabled = false;
+      }
+    }
+
+    function toggleMute() {
+      if (!callFrame) return;
+      isMuted = !isMuted;
+      callFrame.setLocalAudio(!isMuted);
+      muteBtn.classList.toggle('muted', isMuted);
+      muteBtn.innerHTML = isMuted ? '&#128263;' : '&#128266;';
+    }
+
+    async function leaveConversation() {
+      if (callFrame) { await callFrame.leave(); callFrame.destroy(); callFrame = null; }
+      resetUI();
+    }
+
+    function resetUI() {
+      startBtn.style.display = ''; startBtn.disabled = false;
+      controls.style.display = 'none';
+      avatar.classList.remove('active'); visualizer.classList.remove('active');
+      isMuted = false; muteBtn.classList.remove('muted'); muteBtn.innerHTML = '&#128266;';
+      setStatus('Ready to guide you');
+    }
+  </script>
+</body>
+</html>
